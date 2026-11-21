@@ -1,2 +1,33 @@
 # CardWars_nx
-Adventure Time Card Wars android 32-bit wrapper for Nintendo Switch 
+
+Runs **Card Wars** (com.ThugBoatLTD.CardWars, Android armeabi-v7a, Unity 2022.3 / Mono) on a
+Nintendo Switch under Atmosphère, through the shared android32 runtime (`runtime/`): the game's own
+ARM libraries are loaded and run, with Android/bionic/JNI/GL provided by the runtime.
+
+**Status: first scaffold. Nothing here has been built or run on hardware yet** (see `NOTES.md`).
+
+## For players
+You need your own copy of the game: an APK with `lib/armeabi-v7a/`.
+1. Put the NRO in `/switch/cardwars_nx/`.
+2. Copy your Card Wars APK into that folder (any name).
+3. Launch it. The first start unpacks the five libraries from the APK; the game data is read from the APK.
+`debug.log` in the folder is what to send with a bug report.
+
+## Building
+`./build.sh` (Docker, devkitARM + libnx32 + portlibs32; see `runtime/README.md`).
+`launcher/build.sh` builds the forwarder/launcher NRO.
+Checks without the toolchain: `tools/hostcheck/run.sh` (clang syntax check) and
+`python3 runtime/tools/gen_imports.py --check` (import table complete).
+
+## Layout
+- `source/cw_*.c` – Card Wars' own parts: boot (`cw_main.c`, `cw_boot.c`), Boehm GC bridge (`cw_gc.c`),
+  setup plan, config, extra bionic shims, MediaNDK stubs.
+- `source/jni_*.c`, `dcr_*.c`, `jit_arena.c`, `arm_store_emu.c` – carried over from dcr_sea_nx (generic).
+- `source/imports.c` – generated (`runtime/tools/gen_imports.py`); inputs in `tools/`.
+
+## Stick cursor
+The left stick (or right, or both: `[mouse] stick` in `config.ini`) moves an
+on-screen cursor; A taps (hold to drag); ZR speeds it up, ZL slows it down. Every
+button above, the speeds, the dead zone and the cursor's look are `[mouse]`
+options. While the cursor is on, the buttons and stick it uses are not sent to the
+game as gamepad input; set `enabled = false` for the plain gamepad.
