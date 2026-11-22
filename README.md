@@ -5,7 +5,7 @@ Nintendo Switch under Atmosphère, through the shared android32 runtime (`runtim
 ARM libraries are loaded and run, with Android/bionic/JNI/GL provided by the runtime. Specifically designed to be compatible with **ThugRod's updated CardWarsOriginal APK version 1.12.8** Other versions have not been tested and are unlikely to work.
 
 ## For players
-You need a copy of [Thugrod's 1.12.8 updated APK with `lib/armeabi-v7a/`.
+You need a copy of Thugrod's 1.12.8 updated APK with `lib/armeabi-v7a/`.
 1. Put the NRO in `/switch/cardwars_nx/`.
 2. Copy your Card Wars APK into that folder (any name).
 3. Launch it. The first start unpacks the five libraries from the APK; the game data is read from the APK.
