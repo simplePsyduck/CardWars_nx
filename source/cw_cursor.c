@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "cw_config.h"
+#include "cw_menu.h"
 #include "dcr_input.h"
 #include "gl_layer.h"
 #include "rt_window.h"
@@ -134,12 +135,15 @@ static void draw_arrow(float x, float y, float s, int pressed) {
 
 void port_gl_before_swap(void) {
   const CwConfig *c = cw_config();
-  if (!c->mouse || !c->mouse_show)
-    return;
-  float x, y;
-  int visible, pressed;
-  dcr_input_cursor(&x, &y, &visible, &pressed);
-  if (!visible || !init())
+  const int menu = cw_menu_open();
+  float x = 0, y = 0;
+  int visible = 0, pressed = 0;
+  const int want_cursor = c->mouse && c->mouse_show;
+  if (want_cursor)
+    dcr_input_cursor(&x, &y, &visible, &pressed);
+  /* a cursor whose program did not link must not keep the menu off screen */
+  const int draw_cursor = want_cursor && visible && init();
+  if (!draw_cursor && !menu)
     return;
   int w, h;
   dcr_window_size(&w, &h);
@@ -183,7 +187,9 @@ void port_gl_before_swap(void) {
   glEnableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
 
-  draw_arrow(x, y, 1.6f * (float)h / 720.0f * c->mouse_size, pressed);
+  if (draw_cursor)
+    draw_arrow(x, y, 1.6f * (float)h / 720.0f * c->mouse_size, pressed);
+  cw_menu_draw(w, h);
 
   glViewport(vp[0], vp[1], vp[2], vp[3]);
   glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)fb);

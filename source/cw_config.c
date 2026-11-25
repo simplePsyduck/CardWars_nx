@@ -9,7 +9,10 @@
 static CwConfig g_cfg = {.res_w = 1280, .res_h = 720, .boost = 1, .gc_bridge = 1,
                         .mouse = 1, .mouse_stick = 0, .mouse_show = 1, .mouse_btn_click = 0, .mouse_btn_fast = 7,
                         .mouse_btn_slow = 6, .mouse_speed = 700.0f, .mouse_fast = 2.5f, .mouse_slow = 0.3f,
-                        .mouse_deadzone = 0.15f, .mouse_size = 1.0f};
+                        .mouse_deadzone = 0.15f, .mouse_size = 1.0f,
+                        .save_editor = CW_EDITOR_SAFE, .save_editor_btn = 9 /* minus */,
+                        .save_editor_mod = 16 /* none */, .save_editor_switch = 5 /* r */,
+                        .save_editor_backup = 2 /* x */, .save_editor_step = 1};
 
 const CwConfig *cw_config(void) { return &g_cfg; }
 
@@ -46,6 +49,33 @@ static const CfgOpt k_opts[] = {
     {"mouse", "show_cursor", "true", "Draw the cursor on the screen.", CFG_BOOL, NULL, &g_cfg.mouse_show, 0, 0, 0, 0},
     {"mouse", "cursor_size", "1.0", "Size of the drawn cursor (0.5 to 4).", CFG_FLOAT, NULL, &g_cfg.mouse_size, 0.5f,
      4.0f, 0, 0},
+    {"save_editor", "save_editor", "safe",
+     "The save editor over the game, and what it lists: off (no menu), safe (only\n"
+     "# Hearts, Gems, Coins and Max Inventory) or unsafe (every counter of\n"
+     "# external/files/game.json but the two agreement flags). It is written when\n"
+     "# the menu closes; the game reads it the next time it loads the save.",
+     CFG_CHOICE, "off,safe,unsafe", &g_cfg.save_editor, 0, 0, 0, 0},
+    {"save_editor", "save_editor_button", "minus",
+     "The button that opens the save editor (and closes it, saving). One of:\n"
+     "# " CW_MOUSE_BUTTON_NAMES,
+     CFG_CHOICE, CW_MOUSE_BUTTON_NAMES, &g_cfg.save_editor_btn, 0, 0, 0, 0},
+    {"save_editor", "save_editor_modifier", "none",
+     "Held with save_editor_button to open the menu (none: the button alone). Same names.",
+     CFG_CHOICE, CW_MOUSE_BUTTON_NAMES, &g_cfg.save_editor_mod, 0, 0, 0, 0},
+    {"save_editor", "switch_menu_button", "r",
+     "While the menu is open, the button that switches between the safe and the\n"
+     "# unsafe menu. From safe it asks first (A switches, B stays); from unsafe it\n"
+     "# goes back at once. The title says - UNSAFE while that menu is up. Same\n"
+     "# names as save_editor_button (none: no switching).",
+     CFG_CHOICE, CW_MOUSE_BUTTON_NAMES, &g_cfg.save_editor_switch, 0, 0, 0, 0},
+    {"save_editor", "backup_save_button", "x",
+     "While the menu is open, the button that asks to back the save up: A copies\n"
+     "# external/files/game.json to game.json.bak, and the backup it replaces is\n"
+     "# kept as game.json.bak.old; B cancels. (The menu also makes a .bak when it\n"
+     "# opens and finds none.) Same names as save_editor_button, none: off.",
+     CFG_CHOICE, CW_MOUSE_BUTTON_NAMES, &g_cfg.save_editor_backup, 0, 0, 0, 0},
+    {"save_editor", "step", "1", "How much one press of left/right changes a value by.", CFG_INT, NULL,
+     &g_cfg.save_editor_step, 1.0f, 1000.0f, 0, 0},
     CFG_ROW_GL_SELFTEST(&g_cfg.gl_selftest),
     CFG_ROW_BOOT_LOG(CFG_HELP_BOOT_LOG, &g_cfg.boot_log),
     CFG_ROW_LOG_JNI(CFG_HELP_LOG_JNI, &g_cfg.log_jni),

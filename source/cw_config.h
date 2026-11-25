@@ -14,7 +14,23 @@ typedef struct {
   int mouse, mouse_stick, mouse_show;       /* stick: 0 left, 1 right, 2 both */
   int mouse_btn_click, mouse_btn_fast, mouse_btn_slow; /* index into cw_mouse_buttons[]; last = none */
   float mouse_speed, mouse_fast, mouse_slow, mouse_deadzone, mouse_size;
+  /* [save_editor]: the save editor over the game (cw_menu.c) */
+  int save_editor;                            /* CW_EDITOR_OFF, _SAFE or _UNSAFE */
+  int save_editor_btn, save_editor_mod;       /* button indexes, as the mouse's; none = 16 */
+  int save_editor_switch;                     /* button that moves between safe and unsafe; none = 16 */
+  int save_editor_backup;                     /* button that asks to back the save up; none = 16 */
+  int save_editor_step;                       /* left/right change a value by this */
 } CwConfig;
+
+/* [save_editor] save_editor: off hides the editor; safe lists Hearts, Gems,
+ * Coins and Max Inventory; unsafe lists every other save field but the two
+ * agreement flags (cw_menu.c). While the menu is open, switch_menu_button moves
+ * between the two (safe asks A/B first), and backup_save_button asks before it
+ * copies game.json to game.json.bak, keeping the one before as .bak.old. The
+ * menu also makes a .bak of its own when it opens and finds none. */
+#define CW_EDITOR_OFF 0
+#define CW_EDITOR_SAFE 1
+#define CW_EDITOR_UNSAFE 2
 
 #define CW_MOUSE_BUTTON_NAMES "a,b,x,y,l,r,zl,zr,plus,minus,stickl,stickr,up,down,left,right,none"
 

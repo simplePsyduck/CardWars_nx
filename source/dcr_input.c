@@ -64,6 +64,7 @@
 #include <switch.h>
 
 #include "cw_config.h"
+#include "cw_menu.h"
 #include "dcr_input.h"
 #include "dcr_jni_unity.h"
 #include "dcr_time.h"
@@ -101,6 +102,7 @@ static void *g_thiz;
 #define NSLOTS 9
 static PadState g_pads[NSLOTS];
 static u64 g_held_sent;   /* buttons the game has seen held */
+static u64 g_raw_sent;    /* buttons as read, before the cursor took any */
 static int g_ready;
 static float g_view_sx = 1.0f, g_view_sy = 1.0f; /* panel -> view */
 
@@ -221,6 +223,14 @@ static void ptr_up(int id) {
 }
 
 static void touch_frame(void) {
+  /* the save editor has no touch controls: a finger on the screen behind it
+   * must not reach the game (a finger that was down when it opened is let go) */
+  if (cw_menu_open()) {
+    for (int i = g_cur.count - 1; i >= 0; i--)
+      if (g_cur.id[i] != 98 && g_cur.id[i] != 99)
+        ptr_up(g_cur.id[i]);
+    return;
+  }
   HidTouchScreenState ts = {0};
   hidGetTouchScreenStates(&ts, 1);
   int seen[DCR_MAX_POINTERS] = {0};
@@ -642,6 +652,23 @@ static void pad_frame(void) {
   PadState *pad = active >= 0 ? &g_pads[active] : NULL;
   float st4[4] = {0};
   u64 held = (pad ? slot_read(active, st4) : 0) | g_ts_held; /* + the test script's */
+
+  /* The save editor (cw_menu.c) reads the pad before the game does. While it
+   * is open the game gets no press and a neutral pad, so nothing behind the
+   * menu moves; the buttons held when it closes are not new presses. */
+  const u64 raw = held;
+  const u64 menu_down = held & ~g_raw_sent;
+  g_raw_sent = held;
+  const int menu = cw_menu_input(held, menu_down, st4);
+  if (menu) {
+    cursor_pad(held, st4, 0); /* release a cursor tap the menu took over */
+    g_held_sent = raw;
+    memset(st4, 0, sizeof st4);
+    float idle[DCR_AXES] = {0};
+    if (g_pad_announced && memcmp(idle, g_axis_sent, sizeof idle) != 0)
+      send_axes(idle);
+    return;
+  }
   held = cursor_pad(held, st4, pad != NULL);
   /* against what the game last saw: a change of controller releases the old
    * one's buttons and presses the new one's */

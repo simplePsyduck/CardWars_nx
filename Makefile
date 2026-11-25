@@ -17,6 +17,8 @@ PORT_NPDM_PROGRAM_ID := 0x0100000000001030
 # kernel gives the heap region more room, and the game had run out of 1 GiB
 # (GPU buffers + Unity + Mono) at about frame 445.
 PORT_NPDM_ADDRSPACE := 2
+# More GL errors in the log (gl_mesa.c's RT_GL_CHECK, with the calls that raise
+# them) for a bug report: -DRT_GL_CHECK=1 on the build's CFLAGS.
 include runtime/runtime.mk
 
 .PHONY: check

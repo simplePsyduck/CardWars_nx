@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------------
 APP_TITLE    := Adventure Time: Card Wars
 APP_AUTHOR   := simplePsyduck
-APP_VERSION  := 1.0
+APP_VERSION  := 1.1
 TARGET       := cardwars_nx
 PORT_PAYLOAD := cardwars_nx
 LAUNCHER_SOURCES :=

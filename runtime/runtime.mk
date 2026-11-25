@@ -82,11 +82,24 @@ PORTLIBS ?= $(CURDIR)/portlibs32
 ifeq ($(origin DCR_GL_MESA),undefined)
 DCR_GL_MESA := $(if $(wildcard $(PORTLIBS)/lib/libEGL.a),1,0)
 endif
-# Which Mesa portlibs32 holds: 26 (Mesa 26.2, with its own Horizon backend,
-# libnouveau_horizon.a) or 20 (Mesa 20.1 with libdrm_nouveau). Both work; the
-# link line and gl_mesa.c follow it (RT_MESA).
+# Which Mesa portlibs32 holds: 26 (Mesa 26.2, its Horizon nouveau backend
+# inside libEGL.a) or 20 (Mesa 20.1, whose libEGL.a calls nouveau_* in
+# libdrm_nouveau.a). Both work; the link line and gl_mesa.c follow it
+# (RT_MESA). It is read from the set's own egl.pc ("Version: 20.1.0-rc3"): a
+# set can carry the other's archives too (the Mesa 20 one here also has
+# libnouveau_horizon.a), and only the libEGL.a itself says which nouveau core
+# it needs -- guessing from libnouveau_horizon.a drops -ldrm_nouveau and the
+# link fails on every nouveau_* call. Without an egl.pc, libdrm_nouveau.a
+# means Mesa 20.
+MESA_VERSION := $(shell sed -n 's/^Version: *\([0-9][0-9]*\).*/\1/p' $(PORTLIBS)/lib/pkgconfig/egl.pc 2>/dev/null)
 ifeq ($(origin PORT_MESA),undefined)
-PORT_MESA := $(if $(wildcard $(PORTLIBS)/lib/libnouveau_horizon.a),26,20)
+ifeq ($(MESA_VERSION),20)
+PORT_MESA := 20
+else ifeq ($(MESA_VERSION),26)
+PORT_MESA := 26
+else
+PORT_MESA := $(if $(wildcard $(PORTLIBS)/lib/libdrm_nouveau.a),20,26)
+endif
 endif
 
 CFLAGS := -g -O2 -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers \
